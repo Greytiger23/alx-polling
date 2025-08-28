@@ -1,5 +1,6 @@
 // src/components/ui/card.tsx
 // This is a placeholder for the Shadcn UI Card component
+import React from 'react';
 
 type CardProps = {
   children: React.ReactNode;

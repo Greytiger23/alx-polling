@@ -1,4 +1,5 @@
 // src/app/polls/create/page.tsx
+import React from 'react';
 
 export default function CreatePollPage() {
   return (

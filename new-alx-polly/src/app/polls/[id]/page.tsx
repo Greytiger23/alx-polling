@@ -1,4 +1,5 @@
 // src/app/polls/[id]/page.tsx
+import React from 'react';
 
 export default function PollDetailPage({ params }: { params: { id: string } }) {
   return (

@@ -1,5 +1,6 @@
 // src/components/ui/button.tsx
 // This is a placeholder for the Shadcn UI Button component
+import React from 'react';
 
 type ButtonProps = {
   children: React.ReactNode;

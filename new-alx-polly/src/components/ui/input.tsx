@@ -1,5 +1,6 @@
 // src/components/ui/input.tsx
 // This is a placeholder for the Shadcn UI Input component
+import React from 'react';
 
 type InputProps = {
   type?: string;
