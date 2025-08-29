@@ -52,39 +52,42 @@ Before finalizing your response, you MUST verify the following:
 - Are shadcn/ui components used for the UI where appropriate?
 - Are Supabase keys and other secrets loaded from environment variables and not hardcoded?
 
-## Data Fetching & State
-- Fetch all data in Server Components directly via Supabase.
-- Use caching strategies (e.g., server-side caching, revalidation) where appropriate.
-- Avoid fetching data in useEffect or client-only hooks unless necessary for interactivity.
+## Folder Structure
+- All pages are under `/app`, with nested routes for `/polls`, `/auth`, `/api`.
+- Components are organized into `/components`, with UI primitives in `/components/ui`.
+- Use **Server Components** for displaying data.
+- Use **Client Components** only when interactivity (hooks, event listeners) is required.
 
-## Environment Variables & Secrets
-- Only expose non-sensitive public keys via NEXT_PUBLIC_*.
-- Keep secret keys in server-only environment variables (SUPABASE_SECRET_KEY) and ensure they are used only in server-side code.
-- Never include secrets in client-side code or commit to version control.
+## Form Handling
+- Use **Server Actions** for form submissions (e.g., create poll, vote).
+- Avoid using client-side fetch calls for mutations.
+- Use **shadcn/ui** or **react-hook-form** for managing form state.
 
-## QR Code Generation & Sharing
-- Use a dedicated React component (Client Component) for QR code rendering.
-- Pass poll share URLs as props.
-- Use libraries like qrcode.react or similar, imported only in client components.
-- Support copying QR code or share URLs with a button, with proper accessibility.
+## Supabase Usage
+- All database and auth interactions should be via the Supabase client imported from `/lib/supabase`.
+- Never hardcode secrets; always use environment variables (`NEXT_PUBLIC_*` for public keys).
+- Use server-side functions for sensitive operations (e.g., vote tallying, poll creation).
 
-## Naming & File Organization
-- Maintain PascalCase for component filenames.
-- Organize /components/ui for shadcn/ui primitives.
-- Organize /components for custom, composite components.
-- Keep server-side logic in /lib or /app/api with clear separation.
+## QR Code Sharing
+- Implement a dedicated **Client Component** (e.g., `QRCodeShare.tsx`) that receives a poll URL as a prop.
+- Use a library like `qrcode.react`.
+- Provide accessible buttons for copying QR code and share URL.
 
-## Accessibility & UX
-- Ensure all interactive elements (buttons, links) are accessible.
-- Use semantic HTML elements.
-- Provide visual cues for loading states, errors, and success messages.
+## Refactoring & AI Scaffolded Components
+- Use AI to scaffold common patterns like:
+  - "Create a form to submit a new poll"
+  - "Display poll results"
+- After scaffolding, verify the code adheres to the rules:
+  - R2 for form handling
+  - R3 for Supabase usage
+  - R4 for QR code sharing
 
-## Testing & Debugging
-- Write unit tests for Server Actions and utility functions.
-- Use React Testing Library for client components.
-- Use Next.js error boundary (error.tsx) for catching unhandled errors.
+## Observations & Best Practices
+- Example: Scaffolded a create poll form with a Server Action, following R2.
+- Example: Fetched poll list directly in a server component from `/lib/supabase`, following R1 and R3.
+- Example: Built QRCodeShare component passing URL as a prop; fixed initial client fetch to pass data from server, following R4.
 
-## Documentation & Comments
-- Comment complex logic, especially within Server Actions.
-- Document component purpose, props, and expected behaviors.
-- Maintain a README with setup instructions, environment variable setup, and architecture overview.
+## Next Steps
+- Continue scaffolding components with AI and verify adherence.
+- Update rules based on new patterns observed.
+- Document common refactoring patterns for consistency.
