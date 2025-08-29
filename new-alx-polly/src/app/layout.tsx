@@ -1,5 +1,7 @@
 // src/app/layout.tsx
+
 import React from 'react';
+import Link from 'next/link';
 
 export default function RootLayout({
   children,
@@ -17,13 +19,11 @@ export default function RootLayout({
             <nav>
               <ul className="flex space-x-6">
                 <li>
-                  <a href="/" className="text-gray-600 hover:text-blue-600">Home</a>
+                  <Link href="/" className="text-gray-600 hover:text-blue-600">Home</Link>
                 </li>
+                  <Link href="/polls" className="text-gray-600 hover:text-blue-600">Polls</Link>
                 <li>
-                  <a href="/polls" className="text-gray-600 hover:text-blue-600">Polls</a>
-                </li>
-                <li>
-                  <a href="/polls/create" className="text-gray-600 hover:text-blue-600">Create Poll</a>
+                  <Link href="/polls/create" className="text-gray-600 hover:text-blue-600">Create Poll</Link>
                 </li>
                 <li>
                   <a href="/auth/login" className="text-gray-600 hover:text-blue-600">Login</a>
