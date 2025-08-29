@@ -1,7 +1,7 @@
 'use server'
 
 // Server Actions for handling form submissions and mutations
-import { revalidatePath } from 'next/navigation'
+import { revalidatePath } from 'next/dist/client/navigation'
 import { redirect } from 'next/dist/client/navigation'
 import { createPoll, castVote, updatePoll, deletePoll } from './db'
 import { getCurrentUser } from './client'

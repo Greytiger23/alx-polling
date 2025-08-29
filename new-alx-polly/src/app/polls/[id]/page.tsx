@@ -59,7 +59,7 @@ export default function PollDetailPage() {
             
             {/* Vote Form Component */}
             <VoteForm 
-              id={poll.id}
+              pollId={poll.id}
               options={poll.options.map(opt => ({ id: opt.id, text: opt.text }))}
               onSubmitVote={(optionId: string) => {
                 console.log('Vote submitted for option:', optionId);
