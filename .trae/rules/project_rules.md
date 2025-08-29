@@ -57,12 +57,6 @@ Before finalizing your response, you MUST verify the following:
 - Use caching strategies (e.g., server-side caching, revalidation) where appropriate.
 - Avoid fetching data in useEffect or client-only hooks unless necessary for interactivity.
 
-## Error Handling & User Feedback
-- Errors from Server Actions should:
-- Be caught and displayed gracefully in the UI.
-- Use a consistent notification or message component.
-- Use Next.js error.tsx for segment-level errors, especially for data fetching failures.
-
 ## Environment Variables & Secrets
 - Only expose non-sensitive public keys via NEXT_PUBLIC_*.
 - Keep secret keys in server-only environment variables (SUPABASE_SECRET_KEY) and ensure they are used only in server-side code.
