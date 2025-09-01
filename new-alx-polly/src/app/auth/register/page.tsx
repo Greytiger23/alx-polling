@@ -1,6 +1,4 @@
 // src/app/auth/register/page.tsx
-import React from 'react';
-import { RegisterForm } from '@/components/auth/RegisterForm';
 
 export default function RegisterPage() {
   return (
@@ -9,12 +7,8 @@ export default function RegisterPage() {
         <div className="px-6 py-8">
           <h2 className="text-2xl font-bold text-center mb-6">Create an Account</h2>
           <div className="space-y-4">
-            <RegisterForm 
-              onSubmit={(data) => {
-                // This will be implemented with actual registration
-                console.log('Registration attempt:', data);
-              }} 
-            />
+            {/* Registration form will be implemented here */}
+            <p className="text-center text-gray-500">Registration form placeholder</p>
           </div>
         </div>
       </div>

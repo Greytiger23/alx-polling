@@ -6,19 +6,22 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { createPollFromObject } from '../../lib/supabase/actions';
 import { useRouter } from 'next/navigation';
+import { Poll } from '../../lib/supabase/types';
 
 type PollFormProps = {
-  initialData?: {
-    title: string;
-    description?: string;
-    options: string[];
+  initialData?: Partial<Poll> & {
+    options?: string[];
   };
 };
 
 export function PollForm({ initialData }: PollFormProps) {
   const [title, setTitle] = React.useState(initialData?.title || '');
-  const [description, setDescription] = React.useState(initialData?.description || '');
-  const [options, setOptions] = React.useState<string[]>(initialData?.options || ['', '']);
+  const [description, setDescription] = React.useState<string | undefined>((initialData as Poll)?.description || '');
+  const [options, setOptions] = React.useState<string[]>(
+    initialData?.options || 
+    initialData?.options?.map(opt => opt.text) || 
+    ['', '']
+  );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const router = useRouter();
@@ -59,7 +62,7 @@ export function PollForm({ initialData }: PollFormProps) {
 
       const result = await createPollFromObject({
         title: title.trim(),
-        description: description.trim() || undefined,
+        description: description?.trim() || undefined,
         options: filteredOptions
       });
 
@@ -105,7 +108,7 @@ export function PollForm({ initialData }: PollFormProps) {
         </label>
         <Input
           id="description"
-          value={description}
+          value={description || ''}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add a description for your poll"
           disabled={isSubmitting}

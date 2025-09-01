@@ -1,6 +1,4 @@
 // src/app/auth/login/page.tsx
-import React from 'react';
-import { LoginForm } from '@/components/auth/LoginForm';
 
 export default function LoginPage() {
   return (
@@ -9,12 +7,8 @@ export default function LoginPage() {
         <div className="px-6 py-8">
           <h2 className="text-2xl font-bold text-center mb-6">Login to Your Account</h2>
           <div className="space-y-4">
-            <LoginForm 
-              onSubmit={(data) => {
-                // This will be implemented with actual authentication
-                console.log('Login attempt:', data);
-              }} 
-            />
+            {/* Login form will be implemented here */}
+            <p className="text-center text-gray-500">Login form placeholder</p>
           </div>
         </div>
       </div>
