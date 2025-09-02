@@ -13,7 +13,7 @@ import {
   signUpAction,
   signOutAction
 } from './actions';
-import { supabaseServer } from './client';
+import { supabase } from './client';
 
 // Mock dependencies
 jest.mock('next/cache', () => ({
@@ -25,12 +25,15 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('./client', () => ({
-  supabaseServer: jest.fn(),
+  supabase: jest.fn(),
 }));
 
 jest.mock('./db', () => ({
   createPollInDb: jest.fn(),
   updatePollInDb: jest.fn(),
+  pollsDb: {
+    deletePoll: jest.fn().mockResolvedValue(true)
+  }
 }));
 
 describe('Authentication Actions', () => {
@@ -121,5 +124,30 @@ describe('Poll Actions', () => {
     // Add more tests for createPollAction
   });
 
+  describe('deletePollAction', () => {
+    it('should delete a poll and return success', async () => {
+      const pollId = 'test-poll-id';
+      
+      const result = await deletePollAction(pollId);
+      
+      expect(result).toEqual({
+        success: true
+      });
+      expect(revalidatePath).toHaveBeenCalledWith('/polls');
+    });
+    
+    it('should return error if user is not authenticated', async () => {
+      (mockSupabase.auth.getUser as jest.Mock).mockResolvedValueOnce({ data: { user: null }, error: { message: 'Not authenticated' } });
+      
+      const pollId = 'test-poll-id';
+      const result = await deletePollAction(pollId);
+      
+      expect(result).toEqual({
+        success: false,
+        error: 'You must be logged in to delete a poll'
+      });
+    });
+  });
+  
   // Add tests for other poll actions
 });

@@ -2,59 +2,168 @@
 // This file contains database operations for polls
 
 import { supabase } from './client';
-import { Poll } from './types';
+import { Database, CreatePollForm, CastVoteForm, PollUpdate } from './database.types';
+
+// Poll types
+export type Poll = {
+  id: string;
+  title: string;
+  created_at: string;
+  user_id?: string;
+  options?: PollOption[];
+};
+
+export type PollOption = {
+  id: string;
+  poll_id: string;
+  text: string;
+  votes: number;
+};
+
+// Export functions to be used in actions and pages
+export async function getAllPolls(): Promise<Poll[]> {
+  const { data, error } = await supabase
+    .from('polls')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error || !data) return [];
+  return data;
+}
+
+// Create a new poll
+export async function createPoll(poll: CreatePollForm, userId: string) {
+  // Insert the poll
+  const { data: pollData, error: pollError } = await supabase
+    .from('polls')
+    .insert({
+      title: poll.title,
+      user_id: userId,
+    })
+    .select()
+    .single();
+
+  if (pollError || !pollData) {
+    throw new Error(`Error creating poll: ${pollError?.message}`);
+  }
+
+  // Insert the options
+  const optionsToInsert = poll.options.map((option) => ({
+    poll_id: pollData.id,
+    text: option,
+    votes: 0,
+  }));
+
+  const { error: optionsError } = await supabase
+    .from('poll_options')
+    .insert(optionsToInsert);
+
+  if (optionsError) {
+    throw new Error(`Error creating poll options: ${optionsError.message}`);
+  }
+
+  return pollData;
+}
+
+// Cast a vote on a poll
+export async function castVote(vote: CastVoteForm, userId?: string) {
+  // First, increment the vote count for the option
+  const { error: incrementError } = await supabase.rpc('increment_vote', {
+    option_id: vote.optionId
+  });
+
+  if (incrementError) {
+    throw new Error(`Error incrementing vote: ${incrementError.message}`);
+  }
+
+  // If user is logged in, record their vote
+  if (userId) {
+    const { error: voteError } = await supabase
+      .from('votes')
+      .insert({
+        poll_id: vote.pollId,
+        option_id: vote.optionId,
+        user_id: userId
+      });
+
+    if (voteError) {
+      throw new Error(`Error recording vote: ${voteError.message}`);
+    }
+  }
+
+  return { success: true };
+}
+
+// Update a poll
+export async function updatePoll(pollId: string, update: PollUpdate, userId: string) {
+  // Verify ownership
+  const { data: poll, error: pollError } = await supabase
+    .from('polls')
+    .select('user_id')
+    .eq('id', pollId)
+    .single();
+
+  if (pollError || !poll) {
+    throw new Error(`Poll not found: ${pollError?.message}`);
+  }
+
+  if (poll.user_id !== userId) {
+    throw new Error('You do not have permission to update this poll');
+  }
+
+  // Update the poll
+  const { data, error } = await supabase
+    .from('polls')
+    .update(update)
+    .eq('id', pollId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Error updating poll: ${error.message}`);
+  }
+
+  return data;
+}
+
+// Delete a poll
+export async function deletePoll(pollId: string, userId: string) {
+  // Verify ownership
+  const { data: poll, error: pollError } = await supabase
+    .from('polls')
+    .select('user_id')
+    .eq('id', pollId)
+    .single();
+
+  if (pollError || !poll) {
+    throw new Error(`Poll not found: ${pollError?.message}`);
+  }
+
+  if (poll.user_id !== userId) {
+    throw new Error('You do not have permission to delete this poll');
+  }
+
+  // Delete the poll (cascade should handle options and votes)
+  const { error } = await supabase
+    .from('polls')
+    .delete()
+    .eq('id', pollId);
+
+  if (error) {
+    throw new Error(`Error deleting poll: ${error.message}`);
+  }
+
+  return { success: true };
+}
 
 // Poll operations
 export const pollsDb = {
-  // Get all polls
-  getPolls: async (): Promise<Poll[]> => {
-    // This would be implemented with actual Supabase client
-     const { data, error } = await supabase
-       .from('polls')
-       .select('*')
-       .order('created_at', { ascending: false });
-     
-     if (error || !data) return [];
-     return data;
-    
-    // Placeholder implementation
-    return [
-      {
-        id: '1',
-        title: 'What is your favorite programming language?',
-        created_at: new Date().toISOString(),
-        user_id: 'user-1',
-        user_name: 'John Doe',
-        options: [
-          { id: '1', poll_id: '1', text: 'JavaScript', votes: 10 },
-          { id: '2', poll_id: '1', text: 'Python', votes: 8 },
-          { id: '3', poll_id: '1', text: 'TypeScript', votes: 12 },
-          { id: '4', poll_id: '1', text: 'Java', votes: 5 },
-        ],
-      },
-      {
-        id: '2',
-        title: 'Which frontend framework do you prefer?',
-        created_at: new Date().toISOString(),
-        user_id: 'user-2',
-        user_name: 'Jane Smith',
-        options: [
-          { id: '5', poll_id: '2', text: 'React', votes: 15 },
-          { id: '6', poll_id: '2', text: 'Vue', votes: 7 },
-          { id: '7', poll_id: '2', text: 'Angular', votes: 4 },
-          { id: '8', poll_id: '2', text: 'Svelte', votes: 9 },
-        ],
-      },
-    ];
-  },
-  
-  // Get a poll by ID
-  getPollById: async (id: string): Promise<Poll | null> => {
-    // This would be implemented with actual Supabase client
-     const { data, error } = await supabase
-       .from('polls')
-       .select('*')
-       .eq('id', id)
+  getPolls: getAllPolls,
+  createPoll,
+  castVote,
+  updatePoll,
+  deletePoll
+};
        .single();
      
      if (error || !data) return null;

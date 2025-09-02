@@ -2,13 +2,15 @@
   "name": "new-alx-polly",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "verify": "node scripts/verify-connections.js"
   },
   "dependencies": {
     "@radix-ui/react-icons": "^1.3.2",

@@ -34,7 +34,7 @@ export default async function PollsPage() {
               optionCount={poll.options?.length || 0}
               voteCount={poll.total_votes || 0}
               createdAt={new Date(poll.created_at).toLocaleDateString()}
-              createdBy={poll.profiles?.full_name || poll.profiles?.email || 'Anonymous'}
+              createdBy={poll.creator?.full_name || poll.creator?.email || 'Anonymous'}
             />
           ))}
         </div>

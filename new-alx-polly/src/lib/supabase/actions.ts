@@ -1,24 +1,96 @@
-// src/lib/supabase/actions.ts
-'use server';
+'use server'
 
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import { createPollInDb as createPoll, updatePollInDb as updatePoll } from './db';
-import { supabaseServer } from './client';
+// Server Actions for handling form submissions and mutations
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { createPoll, castVote, updatePoll, deletePoll } from './db'
+import { getCurrentUser } from './client'
+import { CreatePollForm, CastVoteForm, PollUpdate } from './database.types'
 
-type CreatePollData = {
-  title: string;
-  description?: string;
-  options: string[];
-};
+// Poll Actions
+export async function createPollAction(formData: FormData) {
+  try {
+    // Get current user
+    const user = await getCurrentUser()
+    if (!user) {
+      throw new Error('You must be logged in to create a poll')
+    }
 
-type ActionResult<T = unknown> = {
-  success: boolean;
-  data?: T;
-  error?: string;
-};
+    // Extract form data
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const allowMultipleVotes = formData.get('allowMultipleVotes') === 'on'
+    const expiresAt = formData.get('expiresAt') as string
 
-// Create a new poll
+    // Extract options (assuming they're named option-0, option-1, etc.)
+    const options: string[] = []
+    let optionIndex = 0
+    while (formData.get(`option-${optionIndex}`)) {
+      const option = formData.get(`option-${optionIndex}`) as string
+      if (option.trim()) {
+        options.push(option.trim())
+      }
+      optionIndex++
+    }
+
+    // Validate input
+    if (!title?.trim()) {
+      throw new Error('Poll title is required')
+    }
+
+    if (options.length < 2) {
+      throw new Error('At least 2 options are required')
+    }
+
+    if (options.length > 10) {
+      throw new Error('Maximum 10 options allowed')
+    }
+
+    // Create poll data
+    const pollData: CreatePollForm = {
+      title: title.trim(),
+      options
+    }
+
+    // Create the poll
+    const result = await createPoll(pollData, user.id)
+
+    // Redirect to the new poll
+    revalidatePath('/polls')
+    redirect(`/polls/${result.id}`)
+  } catch (error: any) {
+    console.error('Error creating poll:', error)
+    return { error: error.message || 'Failed to create poll' }
+  }
+}
+
+// Vote on a poll
+export async function castVoteAction(formData: FormData) {
+  try {
+    const pollId = formData.get('pollId') as string
+    const optionId = formData.get('optionId') as string
+
+    if (!pollId || !optionId) {
+      throw new Error('Poll ID and Option ID are required')
+    }
+
+    const user = await getCurrentUser()
+    const userId = user?.id
+
+    const voteData: CastVoteForm = {
+      pollId,
+      optionId
+    }
+
+    await castVote(voteData, userId)
+
+    revalidatePath(`/polls/${pollId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Error casting vote:', error)
+    return { error: error.message || 'Failed to cast vote' }
+  }
+}
 export async function createPollFromObject(data: CreatePollData): Promise<ActionResult> {
   try {
     const supabase = supabaseServer();
@@ -105,7 +177,7 @@ export async function deletePollAction(pollId: string): Promise<ActionResult> {
       return { success: false, error: 'You must be logged in to delete a poll' };
     }
 
-    const success = await deletePoll(pollId);
+    const success = await pollsDb.deletePoll(pollId);
 
     if (!success) {
       return { success: false, error: 'Failed to delete poll or poll not found' };
