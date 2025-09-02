@@ -69,10 +69,21 @@ export const pollsDb = {
        ...data,
        options: optionsData || [],
      };
-    
+     
     // Placeholder implementation
     const polls = await pollsDb.getPolls();
     return polls.find(poll => poll.id === id) || null;
+  },
+
+  // Delete a poll
+  deletePoll: async (pollId: string): Promise<boolean> => {
+    // This would be implemented with actual Supabase client
+    const { error } = await supabase
+      .from('polls')
+      .delete()
+      .eq('id', pollId);
+    
+    return !error;
   },
   
   // Create a new poll
