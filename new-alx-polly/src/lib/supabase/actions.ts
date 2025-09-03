@@ -8,7 +8,7 @@ import { getCurrentUser } from './client'
 import { CreatePollForm, CastVoteForm, PollUpdate } from './database.types'
 
 // Poll Actions
-export async function createPollAction(formData: FormData) {
+export async function handlePollCreation(formData: FormData) {
   try {
     // Get current user
     const user = await getCurrentUser()
@@ -57,15 +57,15 @@ export async function createPollAction(formData: FormData) {
 
     // Redirect to the new poll
     revalidatePath('/polls')
-    redirect(`/polls/${result.id}`)
-  } catch (error: any) {
+    redirect(`/polls/${(result as { id: string }).id}`)
+  } catch (error: Error | unknown) {
     console.error('Error creating poll:', error)
-    return { error: error.message || 'Failed to create poll' }
+    return { error: error instanceof Error ? error.message : 'Failed to create poll' }
   }
 }
 
 // Vote on a poll
-export async function castVoteAction(formData: FormData) {
+export async function handleVoteSubmission(formData: FormData) {
   try {
     const pollId = formData.get('pollId') as string
     const optionId = formData.get('optionId') as string
@@ -86,14 +86,14 @@ export async function castVoteAction(formData: FormData) {
 
     revalidatePath(`/polls/${pollId}`)
     return { success: true }
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error('Error casting vote:', error)
-    return { error: error.message || 'Failed to cast vote' }
+    return { error: error instanceof Error ? error.message : 'Failed to cast vote' }
   }
 }
-export async function createPollFromObject(data: CreatePollData): Promise<ActionResult> {
+export async function createPollFromObject(data: CreatePollForm): Promise<{ success: boolean; error?: string; data?: CreatePollForm }> {
   try {
-    const supabase = supabaseServer();
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
@@ -102,7 +102,11 @@ export async function createPollFromObject(data: CreatePollData): Promise<Action
 
     const poll = await createPoll({
       title: data.title,
-      description: data.description,
+      description: data.description || undefined,
+      options: data.options
+    }, user.id);
+      title: data.title,
+      description: data.description || undefined,
       options: data.options,
       created_by: user.id
     });
@@ -113,11 +117,10 @@ export async function createPollFromObject(data: CreatePollData): Promise<Action
 
     revalidatePath('/polls');
     return { success: true, data: poll };
-  } catch (error) {
+  } catch (error: Error | unknown) {
     console.error('Error creating poll:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
-}
 
 // Create poll from form data (for form actions)
 export async function createPollAction(formData: FormData) {
@@ -139,9 +142,9 @@ export async function createPollAction(formData: FormData) {
 }
 
 // Update an existing poll
-export async function updatePollAction(pollId: string, data: Partial<CreatePollData>): Promise<ActionResult> {
+export async function updatePollAction(pollId: string, data: Partial<CreatePollForm>): Promise<ActionResult> {
   try {
-    const supabase = supabaseServer();
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {

@@ -32,7 +32,7 @@ jest.mock('./db', () => ({
   createPollInDb: jest.fn(),
   updatePollInDb: jest.fn(),
   pollsDb: {
-    deletePoll: jest.fn().mockResolvedValue(true)
+    deletePoll: jest.fn().mockResolvedValue({ success: true })
   }
 }));
 
@@ -59,7 +59,13 @@ describe('Authentication Actions', () => {
 });
 
 describe('Poll Actions', () => {
-  let mockSupabase: any;
+  let mockSupabase: {
+    auth: {
+      getUser: jest.Mock;
+    };
+    from: jest.Mock;
+    insert: jest.Mock;
+  };
   let mockUser: any;
   let mockCreatePoll: any;
   let mockUpdatePoll: any;

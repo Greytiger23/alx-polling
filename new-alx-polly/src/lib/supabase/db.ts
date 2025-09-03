@@ -69,7 +69,7 @@ export async function createPoll(poll: CreatePollForm, userId: string) {
 export async function castVote(vote: CastVoteForm, userId?: string) {
   // First, increment the vote count for the option
   const { error: incrementError } = await supabase.rpc('increment_vote', {
-    option_id: vote.optionId
+    p_option_id: vote.optionId
   });
 
   if (incrementError) {
@@ -114,7 +114,7 @@ export async function updatePoll(pollId: string, update: PollUpdate, userId: str
   // Update the poll
   const { data, error } = await supabase
     .from('polls')
-    .update(update)
+    .update({ title: update.title })
     .eq('id', pollId)
     .select()
     .single();
