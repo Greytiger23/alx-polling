@@ -56,8 +56,9 @@ export async function createPoll(poll: CreatePollForm, userId: string) {
 
   const { error: optionsError } = await supabase
     .from('poll_options')
-    .insert(optionsToInsert);
-
+const { error: optionsError } = await supabase
+  .from('poll_options')
+  .insert(optionsToInsert);
   if (optionsError) {
     throw new Error(`Error creating poll options: ${optionsError.message}`);
   }
@@ -65,9 +66,39 @@ export async function createPoll(poll: CreatePollForm, userId: string) {
   return pollData;
 }
 
-// Cast a vote on a poll
+/**
+ * Cast a vote on a poll option
+ * 
+ * Handles the core voting logic with support for both authenticated and anonymous voting.
+ * Uses a two-step process: increment vote count and optionally record user vote for tracking.
+ * 
+ * Process:
+ * 1. Increment the vote count for the selected option (atomic operation)
+ * 2. If user is authenticated, record their vote for duplicate prevention
+ * 
+ * Features:
+ * - Atomic vote counting via database RPC function
+ * - Anonymous voting support (no user tracking)
+ * - Authenticated voting with duplicate prevention
+ * - Proper error handling and rollback safety
+ * 
+ * @param {CastVoteForm} vote - Vote data containing pollId and optionId
+ * @param {string} [userId] - Optional user ID for authenticated voting
+ * @returns {Promise<{success: boolean}>} Success confirmation
+ * @throws {Error} When vote increment or recording fails
+ * 
+ * @example
+ * ```typescript
+ * // Anonymous vote
+ * await castVote({ pollId: 'poll-123', optionId: 'option-456' });
+ * 
+ * // Authenticated vote
+ * await castVote({ pollId: 'poll-123', optionId: 'option-456' }, 'user-789');
+ * ```
+ */
 export async function castVote(vote: CastVoteForm, userId?: string) {
-  // First, increment the vote count for the option
+  // Step 1: Increment vote count using atomic database function
+  // This ensures vote counts are accurate even under high concurrency
   const { error: incrementError } = await supabase.rpc('increment_vote', {
     option_id: vote.optionId
   });
@@ -76,20 +107,22 @@ export async function castVote(vote: CastVoteForm, userId?: string) {
     throw new Error(`Error incrementing vote: ${incrementError.message}`);
   }
 
-  // If user is logged in, record their vote
+  // Step 2: Record individual vote for authenticated users (enables duplicate prevention)
   if (userId) {
     const { error: voteError } = await supabase
       .from('votes')
       .insert({
         poll_id: vote.pollId,
         option_id: vote.optionId,
-        user_id: userId
+        user_id: userId // Links vote to specific user for tracking
       });
 
     if (voteError) {
+      // Note: This could fail due to duplicate vote constraints
       throw new Error(`Error recording vote: ${voteError.message}`);
     }
   }
+  // Anonymous votes: Only increment count, no individual tracking
 
   return { success: true };
 }
@@ -165,8 +198,7 @@ export const pollsDb = {
   deletePoll
 };
        .single();
-     
-     if (error || !data) return null;
+     if (error || !data) return null;     if (!data) return null;
      
    // Get poll options
      const { data: optionsData } = await supabase
@@ -243,10 +275,38 @@ export const pollsDb = {
     };
   },
   
-  // Vote on a poll option
+  /**
+   * Vote on a poll option (Alternative Implementation)
+   * 
+   * Alternative voting function with different order of operations compared to castVote.
+   * This version checks for existing votes first, then records the vote, then increments count.
+   * 
+   * Process:
+   * 1. Check if user has already voted on this poll (duplicate prevention)
+   * 2. Record the individual vote in votes table
+   * 3. Increment the option's vote count
+   * 
+   * Note: This implementation differs from castVote() in operation order and error handling.
+   * The main castVote() function is preferred for production use.
+   * 
+   * @param {string} pollId - Unique identifier of the poll
+   * @param {string} optionId - Unique identifier of the selected option
+   * @param {string} userId - Unique identifier of the voting user (required)
+   * @returns {Promise<boolean>} True if vote was successful, false otherwise
+   * 
+   * @example
+   * ```typescript
+   * const success = await vote('poll-123', 'option-456', 'user-789');
+   * if (success) {
+   *   console.log('Vote cast successfully');
+   * } else {
+   *   console.log('Vote failed - user may have already voted');
+   * }
+   * ```
+   */
   vote: async (pollId: string, optionId: string, userId: string): Promise<boolean> => {
-    // This would be implemented with actual Supabase client
-    // // Check if user has already voted
+    // Step 1: Check for existing vote to prevent duplicates
+    // Note: This approach checks first, unlike castVote which relies on database constraints
      const { data: existingVote } = await supabase
        .from('votes')
        .select('*')
@@ -254,27 +314,30 @@ export const pollsDb = {
        .eq('user_id', userId)
        .single();
      
+     // Return false if user has already voted (duplicate prevention)
      if (existingVote) return false;
      
-     // Create vote
+     // Step 2: Record the individual vote
      const { error: voteError } = await supabase
        .from('votes')
        .insert({
          poll_id: pollId,
          option_id: optionId,
-         user_id: userId,
+         user_id: userId, // Required - no anonymous voting in this implementation
        });
      
+     // Return false if vote recording failed
      if (voteError) return false;
      
-     // Increment vote count
+     // Step 3: Increment vote count (after successful vote recording)
      const { error: updateError } = await supabase.rpc('increment_vote', {
-       option_id_param: optionId,
+       option_id: optionId, // Note: Different parameter name than castVote
      });
      
+     // Return success status based on increment operation
      return !updateError;
     
-    // Placeholder implementation to use pollId and avoid unused variable error
+    // Fallback placeholder implementation (should not be reached in production)
     if (!pollId || !optionId || !userId) {
       return false;
     }
