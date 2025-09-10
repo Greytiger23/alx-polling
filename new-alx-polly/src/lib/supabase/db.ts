@@ -197,27 +197,9 @@ export const pollsDb = {
   updatePoll,
   deletePoll
 };
-       .single();
-     if (error || !data) return null;     if (!data) return null;
-     
-   // Get poll options
-     const { data: optionsData } = await supabase
-       .from('poll_options')
-       .select('*')
-       .eq('poll_id', id);
-     
-     return {
-       ...data,
-       options: optionsData || [],
-     };
-     
-    // Placeholder implementation
-    const polls = await pollsDb.getPolls();
-    return polls.find(poll => poll.id === id) || null;
-  },
 
-  // Delete a poll
-  deletePoll: async (pollId: string): Promise<boolean> => {
+// Delete a poll
+const deletePollFunction = async (pollId: string): Promise<boolean> => {
     // This would be implemented with actual Supabase client
     const { error } = await supabase
       .from('polls')
