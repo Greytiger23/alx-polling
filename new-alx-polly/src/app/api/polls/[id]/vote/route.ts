@@ -41,14 +41,15 @@ import { castVote } from '@/lib/supabase/db'
 import { getCurrentUser } from '@/lib/supabase/client'
 import { CastVoteForm } from '@/lib/supabase/database.types'
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Step 1: Get current user (supports anonymous voting - userId can be null)
     const user = await getCurrentUser()
     const userId = user?.id // Optional for anonymous voting support
 
     // Step 2: Extract poll ID from URL parameters
-    const pollId = params.id
+    const resolvedParams = await params
+    const pollId = resolvedParams.id
     
     // Step 3-4: Parse and validate request body
     let optionId: string
