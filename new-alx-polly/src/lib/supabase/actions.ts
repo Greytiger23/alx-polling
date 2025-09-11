@@ -22,7 +22,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createPoll, castVote, updatePoll, deletePoll } from './db'
 import { getCurrentUser } from './client'
-import { CreatePollForm, CastVoteForm, PollUpdate } from './database.types'
+import { CreatePollForm, CastVoteForm } from './database.types'
 
 /**
  * Creates a new poll from form data submitted by users.
@@ -101,10 +101,11 @@ export async function createPollAction(formData: FormData) {
     // Step 7: Cache Invalidation & Navigation - Update cached data and redirect
     revalidatePath('/polls') // Refresh polls listing page
     redirect(`/polls/${result.id}`) // Navigate to newly created poll
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Error handling - Log for debugging and return user-friendly message
     console.error('Error creating poll:', error)
-    return { error: error.message || 'Failed to create poll' }
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create poll'
+    return { error: errorMessage }
   }
 }
 
@@ -149,10 +150,11 @@ export async function castVoteAction(formData: FormData) {
     // Step 6: Refresh poll page to show updated vote counts
     revalidatePath(`/polls/${pollId}`)
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Error handling - Log for debugging and return user-friendly message
     console.error('Error casting vote:', error)
-    return { error: error.message || 'Failed to cast vote' }
+    const errorMessage = error instanceof Error ? error.message : 'Failed to cast vote'
+    return { error: errorMessage }
   }
 }
 

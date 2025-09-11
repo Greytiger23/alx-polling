@@ -2,7 +2,7 @@
 // This file contains database operations for polls
 
 import { supabase } from './client';
-import { Database, CreatePollForm, CastVoteForm, PollUpdate } from './database.types';
+import { CreatePollForm, CastVoteForm, PollUpdate } from './database.types';
 
 // Poll types
 export type Poll = {

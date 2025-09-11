@@ -242,7 +242,7 @@ export interface PollResults {
 }
 
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: string
@@ -284,7 +284,7 @@ export type UserRole = 'creator' | 'voter' | 'anonymous'
 export interface DatabaseError {
   code: string
   message: string
-  details?: any
+  details?: unknown
 }
 
 export interface ValidationError {
@@ -293,14 +293,14 @@ export interface ValidationError {
 }
 
 // Type guards for runtime type checking
-export function isPoll(obj: any): obj is Poll {
-  return obj && typeof obj.id === 'string' && typeof obj.title === 'string'
+export function isPoll(obj: unknown): obj is Poll {
+  return obj !== null && typeof obj === 'object' && 'id' in obj && 'title' in obj && typeof (obj as Record<string, unknown>).id === 'string' && typeof (obj as Record<string, unknown>).title === 'string'
 }
 
-export function isPollOption(obj: any): obj is PollOption {
-  return obj && typeof obj.id === 'string' && typeof obj.option_text === 'string'
+export function isPollOption(obj: unknown): obj is PollOption {
+  return obj !== null && typeof obj === 'object' && 'id' in obj && 'option_text' in obj && typeof (obj as Record<string, unknown>).id === 'string' && typeof (obj as Record<string, unknown>).option_text === 'string'
 }
 
-export function isVote(obj: any): obj is Vote {
-  return obj && typeof obj.id === 'string' && typeof obj.poll_id === 'string' && typeof obj.option_id === 'string'
+export function isVote(obj: unknown): obj is Vote {
+  return obj !== null && typeof obj === 'object' && 'id' in obj && 'poll_id' in obj && 'option_id' in obj && typeof (obj as Record<string, unknown>).id === 'string' && typeof (obj as Record<string, unknown>).poll_id === 'string' && typeof (obj as Record<string, unknown>).option_id === 'string'
 }

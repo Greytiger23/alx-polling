@@ -59,10 +59,14 @@ describe('Authentication Actions', () => {
 });
 
 describe('Poll Actions', () => {
-  let mockSupabase: any;
-  let mockUser: any;
-  let mockCreatePoll: any;
-  let mockUpdatePoll: any;
+  let mockSupabase: jest.Mocked<{
+    auth: { getUser: jest.Mock };
+    from: jest.Mock;
+    insert: jest.Mock;
+  }>;
+  let mockUser: { id: string };
+  let mockCreatePoll: jest.Mock;
+  let mockUpdatePoll: jest.Mock;
 
   beforeEach(() => {
     mockUser = { id: 'test-user-id' };
@@ -111,10 +115,10 @@ describe('Poll Actions', () => {
       formData.append('option', 'Option 2');
       
       // Mock the createPollFromObject function
-      jest.spyOn(global, 'createPollFromObject' as any).mockResolvedValueOnce({
+      jest.spyOn(global, 'createPollFromObject' as keyof typeof global).mockResolvedValueOnce({
         success: true,
         data: { id: 'test-poll-id' },
-      } as any);
+      });
       
       await expect(createPollAction(formData)).rejects.toThrow();
       
