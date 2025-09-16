@@ -49,19 +49,15 @@ export default async function PollsPage() {
       
       {/* Conditional rendering based on poll availability */}
       {polls.length === 0 ? (
-        {/* Empty state - encourages user engagement */}
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">No polls found. Be the first to create one!</p>
-          {/* Call-to-action for first poll creation */}
           <Link href="/polls/create">
             <Button>Create Your First Poll</Button>
           </Link>
         </div>
       ) : (
-        {/* Poll grid - responsive layout for poll discovery */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {polls.map(poll => (
-            {/* PollCard component with formatted data */}
             <PollCard
               key={poll.id}
               id={poll.id}

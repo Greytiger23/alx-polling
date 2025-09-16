@@ -52,12 +52,12 @@
 /* Base styles */
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200;
   }
   body {
     @apply bg-background text-foreground antialiased;
   }
   *:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2;
+    @apply outline-none ring-2 ring-slate-400 ring-offset-2;
   }
 }
