@@ -24,7 +24,8 @@
  * @returns JSX element containing the complete dashboard page
  */
 
-import Link from 'next/link';
+import Link from "next/link";
+import "../styles/global.css";
 
 // Sample poll data for demonstration - TODO: Replace with real database queries
 const polls = [
@@ -58,20 +59,20 @@ export default function HomePage() {
       {/* Application Header - Navigation and User Controls */}
       <header className="w-full border-b bg-white px-8 py-4 flex items-center justify-between ">
         {/* App branding/logo */}
-        <div className="font-bold text-xl">ALX Polly</div>
+        <div className="font-bold text-xl text-primary">ALX Polly</div>
         
         {/* Main navigation links */}
         <nav className="flex items-center space-x-8">
-          <Link href="/polls" className="text-gray-700 font-medium hover:text-black">My Polls</Link>
-          <Link href="/polls/create" className="text-gray-700 font-medium hover:text-black">Create Poll</Link>
+          <Link href="/polls" className="text-muted-foreground hover:text-foreground font-medium">My Polls</Link>
+          <Link href="/polls/create" className="text-muted-foreground hover:text-foreground font-medium">Create Poll</Link>
         </nav>
         
         {/* User controls section */}
         <div className="flex items-center space-x-2">
           {/* Desktop-only create poll button for quick access */}
-          <button className="hidden md:block px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 transition">Create Poll</button>
+          <button className="hidden md:block px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition">Create Poll</button>
           {/* User avatar placeholder - TODO: Replace with actual user avatar */}
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-700 border"></div>
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground border border-border"></div>
         </div>
       </header>
 
@@ -81,33 +82,33 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">My Polls</h1>
           {/* Primary call-to-action for poll creation */}
-          <button className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition">Create New Poll</button>
+          <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition">Create New Poll</button>
         </div>
         
         {/* Poll Grid - Responsive layout for poll cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {polls.map((poll, idx) => (
             // Individual poll card - TODO: Replace with PollCard component
-            <div key={idx} className="bg-white p-6 rounded-lg shadow border border-gray-100">
+            <div key={idx} className="bg-card text-card-foreground p-6 rounded-lg shadow border border-border">
               {/* Poll title - primary content */}
               <div className="text-lg font-semibold mb-1">{poll.title}</div>
               
               {/* Poll description - secondary content */}
-              <div className="text-gray-600 mb-4">{poll.description}</div>
+              <div className="text-muted-foreground mb-4">{poll.description}</div>
               
               {/* Poll metadata - options and vote counts */}
-              <div className="text-sm text-gray-500 mb-1">{poll.options} options</div>
-              <div className="text-sm text-gray-500 mb-1">{poll.votes} total votes</div>
+              <div className="text-sm text-muted-foreground mb-1">{poll.options} options</div>
+              <div className="text-sm text-muted-foreground mb-1">{poll.votes} total votes</div>
               
               {/* Creation timestamp - least important info */}
-              <div className="text-xs text-gray-400 mt-4">Created on {poll.created}</div>
+              <div className="text-xs text-muted-foreground mt-4">Created on {poll.created}</div>
             </div>
           ))}
         </div>
       </main>
 
       {/* Application Footer - Placeholder for additional links/info */}
-      <footer className="w-full border-t bg-white py-4 text-center text-gray-400 text-sm mt-auto">
+      <footer className="w-full border-t border-border bg-card py-4 text-center text-muted-foreground text-sm mt-auto">
         {/* Footer content can be added here (terms, privacy, etc.) */}
       </footer>
     </div>

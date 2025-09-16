@@ -1,4 +1,4 @@
-// src/app/polls/page.tsx
+// src/app/polls/pollpage.tsx
 
 /**
  * PollsPage Component
@@ -67,13 +67,13 @@ export default async function PollsPage() {
               id={poll.id}
               question={poll.title}
               optionCount={poll.options?.length || 0} {/* Safe access with fallback */}
-              voteCount={poll.total_votes || 0} {/* Safe access with fallback */}
+              voteCount={Number(poll.total_votes) || 0} {/* Safe access with fallback and type conversion */}
               createdAt={new Date(poll.created_at).toLocaleDateString()} {/* Format timestamp */}
               createdBy={poll.creator?.full_name || poll.creator?.email || 'Anonymous'} {/* Creator fallback chain */}
             />
           ))}
         </div>
-      )}
+)}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-// src/app/polls/[id]/page.tsx
+// src/app/polls/[id]/idpage.tsx
 import React from 'react';
 import Link from 'next/link';
 import { VoteForm } from '@/components/polls/VoteForm';

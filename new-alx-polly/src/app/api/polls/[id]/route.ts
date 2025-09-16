@@ -18,9 +18,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const result = await updatePoll(pollId, pollData, user.id)
 
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating poll:', error)
-    return NextResponse.json({ error: error.message || 'Failed to update poll' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to update poll' }, { status: 500 })
   }
 }
 
